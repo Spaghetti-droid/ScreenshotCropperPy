@@ -71,7 +71,7 @@ The exe can be generated using pyinstaller. In the project root directory, execu
     
     pyinstaller -F screenshot-cropper.py
 
-## Rationale for remake
+## Rationale for remakaking ScreenshotCropper
 While the java version of the program functions well enough most of the time, it suffers from issues which are caused by its interference with the clipboard. Notably copying and pasting images while the java screenshot cropper is active isn't possible, which can cause a level of confusion in the person affected. Relatedly, the handling of the clipboard in java does not lend itself well to the purpose of this program, which leads to strange manipulations that are needed to ensure we notice when a screenshot has been taken.
 
 As such, it would be better to not rely on the clipboard at all, and rather listen for a key press (such as F12) and take the screenshot when a press is detected. Unfortunately, java does not seem to have an obvious way of doing that without being focused on the gui of the application. Hence my decision to recode the program in Python.

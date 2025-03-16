@@ -66,7 +66,7 @@ def main():
     
     try:
         handler.startListening()
-        input("Listening. Press F12 to take screenshots. Press enter when focussed on this window to stop.")
+        input("Listening. Press F12 to take screenshots. Press enter when focused on this window to stop.")
     finally:
         # Probably unecessary
         handler.stopListening()

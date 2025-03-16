@@ -33,11 +33,11 @@ Listen for screenshots, crop them to the desired format, and save them to disk
 ''')
     parser.add_argument("-l", "--log-level", dest="logLevel", help=f"Level of detail for logged events. Default: {options.logLevel}", default=options.logLevel)
     parser.add_argument("-p", "--path", help=f"Path to the folder where the screenshots will be saved. Currently: {options.path}.", default=options.path)
-    parser.add_argument("-x", "--x-offset", dest="x", type=int,  help=f"x offset (from top left) for the crop box. Currently: {options.xOffset}.", default=options.xOffset)
-    parser.add_argument("-y", "--y-offset", dest='y', type=int, help=f"y offset from top left of the crop box. Currently: {options.yOffset}.", default=options.yOffset)
-    parser.add_argument("-W", "--width", type=int, help=f"Width of crop box. Currently: {options.width}.", default=options.width)
-    parser.add_argument("-H", "--height", type=int, help=f"Height of crop box. Currently: {options.height}.", default=options.height)
-    parser.add_argument("-s", "--save", action='store_true', help=f"Save provided options, so that they become the new defaults.")
+    parser.add_argument("-x", "--x-offset", dest="x", type=int,  help=f"x offset from the top left of the captured area. Currently: {options.xOffset}.", default=options.xOffset)
+    parser.add_argument("-y", "--y-offset", dest='y', type=int, help=f"y offset from the top left of the captured area. Currently: {options.yOffset}.", default=options.yOffset)
+    parser.add_argument("-W", "--width", type=int, help=f"Width of the captured area. Currently: {options.width}.", default=options.width)
+    parser.add_argument("-H", "--height", type=int, help=f"Height of the captured area. Currently: {options.height}.", default=options.height)
+    parser.add_argument("-s", "--save", action='store_true', help=f"Save the provided options, so that they become the new defaults.")
     return parser.parse_args()
 
 def main():

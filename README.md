@@ -50,7 +50,7 @@ At its simplest ScreenshotCropper can be used with no arguments:
     $ python screenshot-cropper.py
     
     Using Options:{ Folder path: ./Screenshots, X Offset: 0, Y Offset: 0, width: 1920, height: 1080 }
-    Listening. Press F12 to take screenshots. Press enter when focussed on this window to stop.
+    Listening. Press F12 to take screenshots. Press enter when focused on this window to stop.
 
 If you want to use a different value for a parameter than the default, you can specify it with the corresponding option. Here's an example where we change the path:
 

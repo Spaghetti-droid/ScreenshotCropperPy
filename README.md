@@ -35,7 +35,7 @@ All documentation below uses the python files. The executables should be called 
         options:
           -h, --help            show this help message and exit
           -l LOGLEVEL, --log-level LOGLEVEL
-                                Level of detail for logged events. Default: DEBUG
+                                Level of detail for logged events. Currently: WARNING
           -p PATH, --path PATH  Path to the folder where the screenshots will be saved. Currently: ./Screenshots.
           -x X, --x-offset X    x offset from top left of the captured area. Currently: 0.
           -y Y, --y-offset Y    y offset from top left of the captured area. Currently: 0.

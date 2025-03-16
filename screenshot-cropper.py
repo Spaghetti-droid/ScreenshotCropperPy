@@ -1,12 +1,13 @@
 import logging
-import sys
+import pickle
 import argparse
 from pathlib import Path
 from scCore.ScreenshotEventHandler import *
 
 # TODO 
-# - Functionality for saving/loading options
 # - GUI
+
+OPTIONS_FILE_PATH = Path('./options.pickle')
 
 DEFAULT_X=0
 DEFAULT_Y=0
@@ -14,11 +15,12 @@ DEFAULT_W=1920
 DEFAULT_H=1080
 DEFAULT_PATH='./Screenshots'
 
-DEFAULT_LOG_LEVEL = "DEBUG"
+DEFAULT_LOG_LEVEL = "WARNING"
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 logger = logging.getLogger(__name__)
+logging.basicConfig(format=LOG_FORMAT, filename='ScreenshotCropper.log', level=DEFAULT_LOG_LEVEL, filemode='w')
 
-def initArgParser() -> argparse.Namespace:
+def initArgParser(options: Options) -> argparse.Namespace:
     """Defines the arguments that the program can use
 
     Returns:
@@ -29,37 +31,73 @@ def initArgParser() -> argparse.Namespace:
                                      description=f'''\
 Listen for screenshots, crop them to the desired format, and save them to disk
 ''')
-    parser.add_argument("-l", "--log-level", dest="logLevel", help=f"Level of detail for logged events. Default: {DEFAULT_LOG_LEVEL}", default=DEFAULT_LOG_LEVEL)
-    parser.add_argument("-p", "--path", help=f"Path to the folder where the screenshots will be saved. Currently: {DEFAULT_PATH}.", default=DEFAULT_PATH)
-    parser.add_argument("-x", "--x-offset", dest="x", type=int,  help=f"x offset (from top left) for the crop box. Currently: {DEFAULT_X}.", default=DEFAULT_X)
-    parser.add_argument("-y", "--y-offset", dest='y', type=int, help=f"y offset from top left of the crop box. Currently: {DEFAULT_Y}.", default=DEFAULT_Y)
-    parser.add_argument("-W", "--width", type=int, help=f"Width of crop box. Currently: {DEFAULT_W}.", default=DEFAULT_W)
-    parser.add_argument("-H", "--height", type=int, help=f"Height of crop box. Currently: {DEFAULT_H}.", default=DEFAULT_H)
+    parser.add_argument("-l", "--log-level", dest="logLevel", help=f"Level of detail for logged events. Default: {options.logLevel}", default=options.logLevel)
+    parser.add_argument("-p", "--path", help=f"Path to the folder where the screenshots will be saved. Currently: {options.path}.", default=options.path)
+    parser.add_argument("-x", "--x-offset", dest="x", type=int,  help=f"x offset (from top left) for the crop box. Currently: {options.xOffset}.", default=options.xOffset)
+    parser.add_argument("-y", "--y-offset", dest='y', type=int, help=f"y offset from top left of the crop box. Currently: {options.yOffset}.", default=options.yOffset)
+    parser.add_argument("-W", "--width", type=int, help=f"Width of crop box. Currently: {options.width}.", default=options.width)
+    parser.add_argument("-H", "--height", type=int, help=f"Height of crop box. Currently: {options.height}.", default=options.height)
+    parser.add_argument("-s", "--save", action='store_true', help=f"Save provided options, so that they become the new defaults.")
     return parser.parse_args()
 
 def main():
-    args = initArgParser()
+    # Get arguments
     
-    # Configure logs
-    
-    logging.basicConfig(format=LOG_FORMAT, filename='ScreenshotCropper.log', level=args.logLevel.upper(), filemode='w')
-    
+    savedOptions = loadOptions()
+    args = initArgParser(savedOptions)
+        
     # Init
     
+    logger.setLevel(args.logLevel.upper())
+    
     logger.warning('Initialising')
-    options = Options(args.path, args.x, args.y, args.width, args.height)
+    options = Options(args.path, args.x, args.y, args.width, args.height, args.logLevel)
     validateOptions(options)
+    if args.save:
+        saveOptions(options)
     options.path.mkdir(666, True, True)
     handler = ScreenShotEventHandler(options)
+    
+    optionsReport = 'Using Options:{ ' + options.toString() +' }'
+    print(optionsReport)
+    logger.info(optionsReport)
     
     # Listen and block
     
     try:
         handler.startListening()
-        input("Listening. Press F12 for screenshots. Press enter on this window to exit.")
+        input("Listening. Press F12 to take screenshots. Press enter when focussed on this window to stop.")
     finally:
         # Probably unecessary
         handler.stopListening()
+   
+def loadOptions() -> Options:
+    """ Load options from save file
+    Returns:
+        Options: Deserialized contents of the file
+    """
+    if not OPTIONS_FILE_PATH.exists():
+        logger.info('No save file found, using defaults')
+        return Options(DEFAULT_PATH, DEFAULT_X, DEFAULT_Y, DEFAULT_W, DEFAULT_H, DEFAULT_LOG_LEVEL)
+    try:
+        with open(OPTIONS_FILE_PATH, "rb") as f:
+            return pickle.load(f)
+    except Exception as ex:
+        print("Error while loading options:", ex)
+        logger.exception('Error while loading options', ex)
+        return Options(DEFAULT_PATH, DEFAULT_X, DEFAULT_Y, DEFAULT_W, DEFAULT_H, DEFAULT_LOG_LEVEL)
+
+def saveOptions(options: Options) -> None:
+    """Save options to file
+    Args:
+        options (Options): The options we want to save
+    """
+    logger.warning('Saving options')
+    try:
+        with open(OPTIONS_FILE_PATH, "wb") as f:
+            pickle.dump(options, f, protocol=pickle.HIGHEST_PROTOCOL)
+    except Exception as ex:
+        logger.error('Failed to save options! ', ex)
     
 def validateOptions(options: Options) -> None:
     """Check values in options are correct

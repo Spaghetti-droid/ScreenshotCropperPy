@@ -1,22 +1,11 @@
 import logging
-import pickle
 import argparse
-from pathlib import Path
 from scCore.ScreenshotEventHandler import *
+from scCore.Options import *
 
 # TODO 
 # - GUI
 
-OPTIONS_FILE_PATH = Path('./options.pickle')
-
-DEFAULT_X=0
-DEFAULT_Y=0
-DEFAULT_W=1920
-DEFAULT_H=1080
-DEFAULT_PATH='./Screenshots'
-
-DEFAULT_LOG_LEVEL = "WARNING"
-LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 logger = logging.getLogger(__name__)
 logging.basicConfig(format=LOG_FORMAT, filename='ScreenshotCropper.log', level=DEFAULT_LOG_LEVEL, filemode='w')
 
@@ -70,52 +59,6 @@ def main():
     finally:
         # Probably unecessary
         handler.stopListening()
-   
-def loadOptions() -> Options:
-    """ Load options from save file
-    Returns:
-        Options: Deserialized contents of the file
-    """
-    if not OPTIONS_FILE_PATH.exists():
-        logger.info('No save file found, using defaults')
-        return Options(DEFAULT_PATH, DEFAULT_X, DEFAULT_Y, DEFAULT_W, DEFAULT_H, DEFAULT_LOG_LEVEL)
-    try:
-        with open(OPTIONS_FILE_PATH, "rb") as f:
-            return pickle.load(f)
-    except Exception as ex:
-        print("Error while loading options:", ex)
-        logger.exception('Error while loading options', ex)
-        return Options(DEFAULT_PATH, DEFAULT_X, DEFAULT_Y, DEFAULT_W, DEFAULT_H, DEFAULT_LOG_LEVEL)
-
-def saveOptions(options: Options) -> None:
-    """Save options to file
-    Args:
-        options (Options): The options we want to save
-    """
-    logger.warning('Saving options')
-    try:
-        with open(OPTIONS_FILE_PATH, "wb") as f:
-            pickle.dump(options, f, protocol=pickle.HIGHEST_PROTOCOL)
-    except Exception as ex:
-        logger.error('Failed to save options! ', ex)
-    
-def validateOptions(options: Options) -> None:
-    """Check values in options are correct
-    Args:
-        options (Options): The options we are running with
-    Raises:
-        ValueError: If an option has a bad value 
-    """
-    if options.path.exists() and not options.path.is_dir():
-        raise ValueError(f'File on provided path is not a Directory!')   
-    validateInt('X Offset', options.xOffset)
-    validateInt('Y Offset', options.yOffset)
-    validateInt('Width', options.width)
-    validateInt('Height', options.height)
-    
-def validateInt(name: str, value: int) -> None:
-    if value < 0:
-        raise ValueError(f'{name} has invalid value: {value}')
 
 if __name__ == "__main__":
     try:

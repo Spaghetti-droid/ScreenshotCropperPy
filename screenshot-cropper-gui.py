@@ -5,6 +5,7 @@ from tkinter import messagebox
 from pathlib import Path
 import logging
 import scCore.Options as opt
+import scCore.ScreenshotEventHandler as seh
 
 
 
@@ -29,13 +30,27 @@ def saveOptions() -> None:
     if not opt.saveOptions(options):
         messagebox.showerror("Error", "Failed to save!")
         
-def start(button:tk.Button) -> None:
-    pass
+def toggle() -> None:
+    global handler
     # Start listening
-    # change label and command
+    if handler:
+        # Stop listening
+        handler.stopListening()
+        handler=None
+        # Update button
+        startBtn.config(text='Start')
+    else:
+        handler = seh.ScreenShotEventHandler(options)
+        try:
+            handler.startListening()
+            # change label and command
+            startBtn.config(text='Stop')
+        except Exception as e:
+            messagebox.showerror("Error", "Couldn't start listening!")
+            logger.error("Couldn't start listening!" + str(e)) 
+            # As a precaution if the startBtn.config somehow failed
+            handler.stopListening()   
     
-def stop(button:tk.Button) -> None:
-    pass
         
     
     
@@ -51,16 +66,14 @@ yOffset = tk.IntVar(value=options.yOffset)
 width  = tk.IntVar(value=options.width)
 height = tk.IntVar(value=options.height)
 
+handler = None
+
 destFrame = tk.Frame(root)
 destFrame.pack(fill=tk.X, pady=5, padx=10, expand=True)
 
 ttk.Label(destFrame, text='Destination Folder').pack(side=tk.LEFT, padx=10, pady=5)
 ttk.Entry(destFrame, textvariable=destFolder).pack(side=tk.LEFT, fill=tk.X, expand=True)
 ttk.Button(destFrame, text='Browse', command=selectFolder).pack(side=tk.LEFT, padx=10, pady=5)
-
-# ttk.Label(root, text='Destination Folder').pack(side=tk.LEFT, padx=10, pady=5)
-# ttk.Entry(root, textvariable=destFolder).pack(side=tk.LEFT, fill=tk.X, expand=True)
-# ttk.Button(root, text='Browse', command=selectFolder).pack(side=tk.LEFT, padx=10, pady=5)
 
 ttk.Separator(root, orient='horizontal').pack(fill=tk.X, padx=50, pady=5, expand=True)
 
@@ -83,7 +96,7 @@ buttonFrame = tk.Frame(root)
 buttonFrame.pack(fill=tk.X, pady=5, expand=True)
 
 ttk.Button(buttonFrame, text='Save', command=saveOptions).pack(side=tk.LEFT, padx=10, pady=5, expand=True)
-startBtn = ttk.Button(buttonFrame, text='Start', command=start)
+startBtn = ttk.Button(buttonFrame, text='Start', command=toggle)
 startBtn.pack(side=tk.LEFT, padx=10, pady=5, expand=True)
 ttk.Button(buttonFrame, text='Close', command=lambda:root.quit()).pack(side=tk.LEFT, padx=10, pady=5, expand=True)
 

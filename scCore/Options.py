@@ -25,7 +25,11 @@ class Options(object):
         self.height = height
         self.path = Path(path)
         self.logLevel = logLevel.upper()
-        self.region = (self.xOffset, self.yOffset, self.width, self.height)
+        
+    def region(self) -> tuple:
+        r = (self.xOffset, self.yOffset, self.width, self.height)
+        logger.error(str(r))
+        return r
         
     def toString(self) -> str:
         return 'Folder path: '+ str(self.path) +', X Offset: ' + str(self.xOffset) + ', Y Offset: ' + str(self.yOffset) + ', width: ' + str(self.width) + ', height: ' + str(self.height) 
@@ -45,7 +49,7 @@ def loadOptions() -> Options:
             return pickle.load(f)
     except Exception as ex:
         print("Error while loading options:", ex)
-        logger.exception('Error while loading options: '+ str(ex))
+        logger.exception('Error while loading options', exc_info=ex)
         return Options(DEFAULT_PATH, DEFAULT_X, DEFAULT_Y, DEFAULT_W, DEFAULT_H, DEFAULT_LOG_LEVEL)
 
 def saveOptions(options: Options) -> bool:

@@ -10,7 +10,7 @@ class ScreenShotEventHandler(object):
     """ Listens for F12 and takes screenshots
     """      
     def __init__(self, options:Options):
-        self.region = options.region 
+        self.region = options.region()
         self.namer = ScreenShotNamer(options.path) 
         self.listener = Listener(on_release=self.on_release) 
     

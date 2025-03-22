@@ -7,7 +7,7 @@ import logging
 import scCore.Options as opt
 import scCore.ScreenshotEventHandler as seh
 
-
+# Load saved config
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format=opt.LOG_FORMAT, filename='ScreenshotCropper.log', level=opt.DEFAULT_LOG_LEVEL, filemode='w')
@@ -21,12 +21,15 @@ def selectFolder() -> str:
     if newDest:
         destFolder.set(newDest)
         
-def saveOptions() -> None:
+def updateCurrentOptions() -> None:
     options.path = Path(destFolder.get())
     options.xOffset = xOffset.get()
     options.yOffset = yOffset.get()
     options.width = width.get()
     options.height = height.get()
+
+def saveOptions() -> None:
+    updateCurrentOptions()
     if not opt.saveOptions(options):
         messagebox.showerror("Error", "Failed to save!")
         
@@ -40,19 +43,19 @@ def toggle() -> None:
         # Update button
         startBtn.config(text='Start')
     else:
-        handler = seh.ScreenShotEventHandler(options)
-        try:
+        updateCurrentOptions()
+        try:            
+            handler = seh.ScreenShotEventHandler(options)
             handler.startListening()
             # change label and command
             startBtn.config(text='Stop')
         except Exception as e:
             messagebox.showerror("Error", "Couldn't start listening!")
-            logger.error("Couldn't start listening!" + str(e)) 
+            logger.error("Couldn't start listening!", exc_info=e) 
             # As a precaution if the startBtn.config somehow failed
-            handler.stopListening()   
-    
-        
-    
+            if handler:
+                handler.stopListening()    
+                handler = None
     
 # Create window
 

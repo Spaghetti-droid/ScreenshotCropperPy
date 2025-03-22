@@ -21,15 +21,22 @@ def selectFolder() -> str:
     if newDest:
         destFolder.set(newDest)
         
-def updateCurrentOptions() -> None:
-    options.path = Path(destFolder.get())
-    options.xOffset = xOffset.get()
-    options.yOffset = yOffset.get()
-    options.width = width.get()
-    options.height = height.get()
+def updateCurrentOptions() -> bool:
+    try:
+        options.path = Path(destFolder.get())
+        options.xOffset = xOffset.get()
+        options.yOffset = yOffset.get()
+        options.width = width.get()
+        options.height = height.get()
+        return True
+    except Exception as e:
+        logger.exception("Options update failed")
+        messagebox.showerror("Invalid parameters", "Please check your inputs and try again")
+        return False
 
 def saveOptions() -> None:
-    updateCurrentOptions()
+    if not updateCurrentOptions():
+        return
     if not opt.saveOptions(options):
         messagebox.showerror("Error", "Failed to save!")
         
@@ -43,7 +50,8 @@ def toggle() -> None:
         # Update button
         startBtn.config(text='Start')
     else:
-        updateCurrentOptions()
+        if not updateCurrentOptions():
+            return
         try:            
             handler = seh.ScreenShotEventHandler(options)
             handler.startListening()
@@ -56,7 +64,7 @@ def toggle() -> None:
             if handler:
                 handler.stopListening()    
                 handler = None
-    
+ 
 # Create window
 
 root = tk.Tk()

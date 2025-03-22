@@ -45,7 +45,7 @@ def loadOptions() -> Options:
             return pickle.load(f)
     except Exception as ex:
         print("Error while loading options:", ex)
-        logger.exception('Error while loading options', ex)
+        logger.exception('Error while loading options: '+ str(ex))
         return Options(DEFAULT_PATH, DEFAULT_X, DEFAULT_Y, DEFAULT_W, DEFAULT_H, DEFAULT_LOG_LEVEL)
 
 def saveOptions(options: Options) -> bool:

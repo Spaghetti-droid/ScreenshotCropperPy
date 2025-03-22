@@ -6,10 +6,12 @@ from pathlib import Path
 import logging
 import scCore.Options as opt
 
-options = opt.loadOptions()
+
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(format=opt.LOG_FORMAT, filename='ScreenshotCropper.log', level=options.logLevel, filemode='w')
+logging.basicConfig(format=opt.LOG_FORMAT, filename='ScreenshotCropper.log', level=opt.DEFAULT_LOG_LEVEL, filemode='w')
+options = opt.loadOptions()
+logger.setLevel(options.logLevel)
 
 # Callbacks
 
@@ -74,8 +76,6 @@ ttk.Label(areaFrame, text='Y Offset').grid(column=0, row=1, padx=5, pady=5)
 ttk.Entry(areaFrame, textvariable=yOffset, width=8).grid(column=1, row=1, padx=5, pady=5)
 ttk.Label(areaFrame, text='Height').grid(column=2, row=1, padx=5, pady=5)
 ttk.Entry(areaFrame, textvariable=height, width=8).grid(column=3, row=1, padx=5, pady=5)
-
-print(areaFrame.grid_size())
 
 ttk.Separator(root, orient='horizontal').pack(fill=tk.X, padx=50, pady=5, expand=True)
 

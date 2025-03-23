@@ -1,13 +1,13 @@
 from pathlib import Path
 import logging
-import pickle
+import json
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_LOG_LEVEL = "WARNING"
 LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 
-OPTIONS_FILE_PATH = Path('./options.pickle')
+OPTIONS_FILE_PATH = Path('./options.json')
 
 DEFAULT_X=0
 DEFAULT_Y=0
@@ -15,14 +15,21 @@ DEFAULT_W=1920
 DEFAULT_H=1080
 DEFAULT_PATH='./Screenshots'
 
+X_OFFSET_KEY    = 'xOffset'
+Y_OFFSET_KEY    = 'yOffset'
+WIDTH_KEY       = 'width'
+HEIGHT_KEY      = 'height'
+PATH_KEY        = 'path'
+LOG_LEVEL_KEY   = 'logLevel'
+
 class Options(object):  
     """ Hold program options
     """      
     def __init__(self, path:str, xOffset:int, yOffset:int, width:int, height:int, logLevel:str):
-        self.xOffset = xOffset
-        self.yOffset = yOffset
-        self.width = width
-        self.height = height
+        self.xOffset = int(xOffset)
+        self.yOffset = int(yOffset)
+        self.width = int(width)
+        self.height = int(height)
         self.path = Path(path)
         self.logLevel = logLevel.upper()
         
@@ -34,6 +41,22 @@ class Options(object):
     
 # Functions for managing options
 
+def toOptions(optsAsJson) -> Options:
+    """Convert a json object into Options
+    Args:
+        optsAsJson (json): The json to convert
+    Returns:
+        Options: The options contained in the json
+    """
+    return Options(
+        optsAsJson[PATH_KEY], 
+        optsAsJson[X_OFFSET_KEY], 
+        optsAsJson[Y_OFFSET_KEY], 
+        optsAsJson[WIDTH_KEY], 
+        optsAsJson[HEIGHT_KEY], 
+        optsAsJson[LOG_LEVEL_KEY]
+        )
+
 def loadOptions() -> Options:
     """ Load options from save file
     Returns:
@@ -43,8 +66,8 @@ def loadOptions() -> Options:
         logger.info('No save file found, using defaults')
         return Options(DEFAULT_PATH, DEFAULT_X, DEFAULT_Y, DEFAULT_W, DEFAULT_H, DEFAULT_LOG_LEVEL)
     try:
-        with open(OPTIONS_FILE_PATH, "rb") as f:
-            return pickle.load(f)
+        with open(OPTIONS_FILE_PATH, "r") as f:
+            return json.load(f, object_hook=toOptions)
     except Exception as ex:
         print("Error while loading options:", ex)
         logger.exception('Error while loading options', exc_info=ex)
@@ -57,8 +80,15 @@ def saveOptions(options: Options) -> bool:
     """
     logger.warning('Saving options')
     try:
-        with open(OPTIONS_FILE_PATH, "wb") as f:
-            pickle.dump(options, f, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(OPTIONS_FILE_PATH, "w") as f:
+            json.dump({
+                X_OFFSET_KEY: options.xOffset,
+                Y_OFFSET_KEY: options.yOffset,
+                WIDTH_KEY: options.width,
+                HEIGHT_KEY: options.height,
+                PATH_KEY: str(options.path),
+                LOG_LEVEL_KEY : options.logLevel
+                }, f, indent=4)
         return True
     except Exception as ex:
         logger.error('Failed to save options! ', ex)

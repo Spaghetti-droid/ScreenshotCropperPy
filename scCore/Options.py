@@ -27,9 +27,7 @@ class Options(object):
         self.logLevel = logLevel.upper()
         
     def region(self) -> tuple:
-        r = (self.xOffset, self.yOffset, self.width, self.height)
-        logger.error(str(r))
-        return r
+        return (self.xOffset, self.yOffset, self.width, self.height)
         
     def toString(self) -> str:
         return 'Folder path: '+ str(self.path) +', X Offset: ' + str(self.xOffset) + ', Y Offset: ' + str(self.yOffset) + ', width: ' + str(self.width) + ', height: ' + str(self.height) 

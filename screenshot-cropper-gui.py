@@ -9,7 +9,6 @@ import scCore.ScreenshotEventHandler as seh
 
 # TODO 
 # - Options as JSON
-# - Help screen
 
 # Load saved config
 
@@ -92,7 +91,7 @@ def toggle() -> None:
 # Create window
 
 root = tk.Tk()
-root.title("Screenshot Cropper")
+root.title("Screenshot Cropper - Take screenshots with F12")
 root.geometry('550x200')
 
 # Initialise field values

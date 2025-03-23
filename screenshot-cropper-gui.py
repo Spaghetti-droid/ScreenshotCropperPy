@@ -9,9 +9,7 @@ import scCore.ScreenshotEventHandler as seh
 
 # TODO 
 # - Options as JSON
-# - Handle folder creation or only allow paths via browser
 # - Help screen
-# - Save confirmation 
 
 # Load saved config
 
@@ -53,8 +51,14 @@ def saveOptions() -> None:
     """
     if not updateCurrentOptions():
         return
-    if not opt.saveOptions(options):
+    if opt.saveOptions(options):
+        saveBtn.config(text='Saved!')
+        saveBtn.after(500, resetSaveLabel)
+    else:
         messagebox.showerror("Error", "Failed to save!")
+        
+def resetSaveLabel() -> None:
+    saveBtn.config(text='Save')
         
 def toggle() -> None:
     """ Toggles listening on or off. listener is set to None when listening is off. An new instance is created when listening is turned on.
@@ -132,7 +136,8 @@ ttk.Separator(root, orient='horizontal').pack(fill=tk.X, padx=50, pady=5, expand
 buttonFrame = tk.Frame(root)
 buttonFrame.pack(fill=tk.X, pady=5, expand=True)
 
-ttk.Button(buttonFrame, text='Save', command=saveOptions).pack(side=tk.LEFT, padx=10, pady=5, expand=True)
+saveBtn = ttk.Button(buttonFrame, text='Save', command=saveOptions)
+saveBtn.pack(side=tk.LEFT, padx=10, pady=5, expand=True)
 
 listener = None
 startBtn = ttk.Button(buttonFrame, text='Start', command=toggle)

@@ -72,6 +72,8 @@ def toggle() -> None:
             return
         try:            
             listener = seh.ScreenShotEventHandler(options)
+            if not options.path.exists():
+                options.path.mkdir(666, True, True)
             listener.startListening()
             # change label and command
             startBtn.config(text='Stop')

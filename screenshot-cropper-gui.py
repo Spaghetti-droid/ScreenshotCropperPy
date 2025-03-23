@@ -39,6 +39,7 @@ def updateCurrentOptions() -> bool:
         options.yOffset = yOffset.get()
         options.width = width.get()
         options.height = height.get()
+        logger.info("Options updated to: {" + options.toString() + "}")
         return True
     except Exception as e:
         logger.exception("Options update failed")

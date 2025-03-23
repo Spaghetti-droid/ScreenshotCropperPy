@@ -7,6 +7,12 @@ import logging
 import scCore.Options as opt
 import scCore.ScreenshotEventHandler as seh
 
+# TODO 
+# - Options as JSON
+# - Handle folder creation or only allow paths via browser
+# - Help screen
+# - Save confirmation 
+
 # Load saved config
 
 logger = logging.getLogger(__name__)
@@ -17,11 +23,19 @@ logger.setLevel(options.logLevel)
 # Callbacks
 
 def selectFolder() -> str:
+    """Open the file selection dialog and allow the user to choose a new destination.
+    If a new destination is chosen, it is set to destFolder
+    """
     newDest = fd.askdirectory(initialdir=destFolder, title='Destination Folder')
     if newDest:
         destFolder.set(newDest)
         
 def updateCurrentOptions() -> bool:
+    """Update options with the values contained in the fields. Shows an error message to the user if the inputs are invalid.
+
+    Returns:
+        bool: True if the update was successful, False if an invalid value was encountered or an error was triggered
+    """
     try:
         options.path = Path(destFolder.get())
         options.xOffset = xOffset.get()
@@ -35,35 +49,39 @@ def updateCurrentOptions() -> bool:
         return False
 
 def saveOptions() -> None:
+    """Save options as a file. Shows a message to the user if saving failed.
+    """
     if not updateCurrentOptions():
         return
     if not opt.saveOptions(options):
         messagebox.showerror("Error", "Failed to save!")
         
 def toggle() -> None:
-    global handler
+    """ Toggles listening on or off. listener is set to None when listening is off. An new instance is created when listening is turned on.
+    """
+    global listener
     # Start listening
-    if handler:
+    if listener:
         # Stop listening
-        handler.stopListening()
-        handler=None
+        listener.stopListening()
+        listener=None
         # Update button
         startBtn.config(text='Start')
     else:
         if not updateCurrentOptions():
             return
         try:            
-            handler = seh.ScreenShotEventHandler(options)
-            handler.startListening()
+            listener = seh.ScreenShotEventHandler(options)
+            listener.startListening()
             # change label and command
             startBtn.config(text='Stop')
         except Exception as e:
             messagebox.showerror("Error", "Couldn't start listening!")
             logger.error("Couldn't start listening!", exc_info=e) 
             # As a precaution if the startBtn.config somehow failed
-            if handler:
-                handler.stopListening()    
-                handler = None
+            if listener:
+                listener.stopListening()    
+                listener = None
  
 # Create window
 
@@ -71,13 +89,15 @@ root = tk.Tk()
 root.title("Screenshot Cropper")
 root.geometry('550x200')
 
+# Initialise field values
+
 destFolder = tk.StringVar(value=options.path)
 xOffset = tk.IntVar(value=options.xOffset)
 yOffset = tk.IntVar(value=options.yOffset)
 width  = tk.IntVar(value=options.width)
 height = tk.IntVar(value=options.height)
 
-handler = None
+# Destination choice
 
 destFrame = tk.Frame(root)
 destFrame.pack(fill=tk.X, pady=5, padx=10, expand=True)
@@ -87,6 +107,8 @@ ttk.Entry(destFrame, textvariable=destFolder).pack(side=tk.LEFT, fill=tk.X, expa
 ttk.Button(destFrame, text='Browse', command=selectFolder).pack(side=tk.LEFT, padx=10, pady=5)
 
 ttk.Separator(root, orient='horizontal').pack(fill=tk.X, padx=50, pady=5, expand=True)
+
+# Screenshot area options
 
 areaFrame = tk.Frame(root)
 areaFrame.pack(padx=50, pady=5, expand=True)
@@ -103,10 +125,14 @@ ttk.Entry(areaFrame, textvariable=height, width=8).grid(column=3, row=1, padx=5,
 
 ttk.Separator(root, orient='horizontal').pack(fill=tk.X, padx=50, pady=5, expand=True)
 
+# Buttons
+
 buttonFrame = tk.Frame(root)
 buttonFrame.pack(fill=tk.X, pady=5, expand=True)
 
 ttk.Button(buttonFrame, text='Save', command=saveOptions).pack(side=tk.LEFT, padx=10, pady=5, expand=True)
+
+listener = None
 startBtn = ttk.Button(buttonFrame, text='Start', command=toggle)
 startBtn.pack(side=tk.LEFT, padx=10, pady=5, expand=True)
 ttk.Button(buttonFrame, text='Close', command=lambda:root.quit()).pack(side=tk.LEFT, padx=10, pady=5, expand=True)

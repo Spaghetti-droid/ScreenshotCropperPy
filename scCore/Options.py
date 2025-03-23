@@ -69,8 +69,8 @@ def loadOptions() -> Options:
         with open(OPTIONS_FILE_PATH, "r") as f:
             return json.load(f, object_hook=toOptions)
     except Exception as ex:
-        print("Error while loading options:", ex)
-        logger.exception('Error while loading options', exc_info=ex)
+        print("Error while loading options:", str(ex))
+        logger.exception('Error while loading options')
         return Options(DEFAULT_PATH, DEFAULT_X, DEFAULT_Y, DEFAULT_W, DEFAULT_H, DEFAULT_LOG_LEVEL)
 
 def saveOptions(options: Options) -> bool:

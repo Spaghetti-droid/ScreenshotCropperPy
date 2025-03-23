@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox
 from pathlib import Path
+import argparse
 import logging
 import scCore.Options as opt
 import scCore.ScreenshotEventHandler as seh
@@ -10,12 +11,21 @@ import scCore.ScreenshotEventHandler as seh
 # TODO 
 # - Options as JSON
 
-# Load saved config
+# Init logger
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(format=opt.LOG_FORMAT, filename='ScreenshotCropper.log', level=opt.DEFAULT_LOG_LEVEL, filemode='w')
 options = opt.loadOptions()
-logger.setLevel(options.logLevel)
+
+# Get args and adjust log level
+
+parser = argparse.ArgumentParser(prog="screenshot-cropper-gui.py", 
+                                    formatter_class=argparse.RawDescriptionHelpFormatter,
+                                    description=f'''\
+Listen for screenshots, crop them to the desired format, and save them to disk
+''')
+parser.add_argument("-l", "--log-level", dest="logLevel", help=f"Level of detail for logged events. Default: {options.logLevel}", default=options.logLevel)
+logger.setLevel(parser.parse_args().logLevel)
 
 # Callbacks
 

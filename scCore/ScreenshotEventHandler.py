@@ -17,8 +17,10 @@ class ScreenShotEventHandler(object):
     def takeScreenshot(self) -> None:
         """Takes a screenshot and stores it with an unused name
         """
-        logger.warning('taking screenshot')
-        pyautogui.screenshot(self.namer.nextFreePath(), region=self.region)
+        logger.warning('Taking screenshot')
+        nextPath = self.namer.nextFreePath()
+        pyautogui.screenshot(nextPath, region=self.region)
+        logger.warning(f'Screenshot saved to {nextPath}')
         
     def on_release(self, key):
         """When a key is released, check whether it is the trigger for a screenshot

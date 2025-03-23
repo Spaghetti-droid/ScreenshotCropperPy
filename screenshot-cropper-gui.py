@@ -8,9 +8,6 @@ import logging
 import scCore.Options as opt
 import scCore.ScreenshotEventHandler as seh
 
-# TODO 
-# - Options as JSON
-
 # Init logger
 
 logger = logging.getLogger(__name__)

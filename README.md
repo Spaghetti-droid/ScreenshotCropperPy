@@ -23,6 +23,38 @@ Note that pyautogui has a large number of its own dependencies that will be inst
 
 ## Usage
 
+### Graphical user interface
+
+To start up the graphical user interface, simply double-click on the screenshot-cropper-gui .py or .exe file. This should open up a user interface that looks like this
+
+![image info](./Documentation/gui.png)
+
+In this interface, we can see the following elements:
+
+#### Destination Folder
+ 
+ You can use the file browser or the text box to specify where you want to save the screenshots. If you give a path to a folder that doesn't exist, it will be created when the 'Start' button is clicked.
+
+#### Screenshot area 
+   
+ In this section you specify which part of your screen(s) you want to capture. All quantities are measured in pixels from the top left of the capturable area.
+ - X Offset: Moves the captured area along the x-axis. For instance, an X Offset of 10 would move the area 10 pixels to the right
+ - Y Offset: Moves the captured area along the y-axis. For instance, a Y Offset of 10 would move the area 10 pixels down
+ - Width: How wide the screenshot should be
+ - Height: How high the screenshot should be
+  
+#### Save button
+   
+   Saves the provided settings to be reused next time the program is run.
+
+#### Start/Stop button
+   
+   Start listening for screenshots. Once this is pressed, any press of F12 will trigger a screenshot. Click this button again to stop listening.
+
+#### Close button 
+   
+   Closes the window, and stops listening. Does exactly the same thing as the cross in the top right.
+
 ### Command-line interface
 
 All documentation below uses the python files. The executables should be called in the command line directly, without going through python.
@@ -62,14 +94,15 @@ If we want to make the options we provide the new defaults, we can provide the -
 
 After this, all calls which don't specify a value for -p will use our new path by default.
 
-### Taking screenshots
+#### Taking screenshots
 
 Once the program is running, any press of F12 will cause a screenshot to be saved to the disk. In order to stop saving screenshots, just press Enter in the console.
 
-## Generating the exe file
-The exe can be generated using pyinstaller. In the project root directory, execute:
+## Generating the exe files
+The exe files can be generated using pyinstaller. In the project root directory, execute:
     
     pyinstaller -F screenshot-cropper.py
+    pyinstaller -F screenshot-cropper-gui.py
 
 ## Rationale for remakaking ScreenshotCropper
 While the java version of the program functions well enough most of the time, it suffers from issues which are caused by its interference with the clipboard. Notably copying and pasting images while the java screenshot cropper is active isn't possible, which can cause a level of confusion in the person affected. Relatedly, the handling of the clipboard in java does not lend itself well to the purpose of this program, which leads to strange manipulations that are needed to ensure we notice when a screenshot has been taken.

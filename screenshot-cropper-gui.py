@@ -75,8 +75,8 @@ def toggle() -> None:
             return
         try:            
             listener = seh.ScreenShotEventHandler(options)
-            if not options.path.exists():
-                options.path.mkdir(666, True, True)
+            if not createOrCheckFolderPath(options.path):
+                return
             listener.startListening()
             # change label and command
             startBtn.config(text='Stop')
@@ -87,7 +87,27 @@ def toggle() -> None:
             if listener:
                 listener.stopListening()    
                 listener = None
- 
+
+def createOrCheckFolderPath(path: Path) -> bool:
+    """Create folder at path if it doesn't exist
+    If it does exist, check that it is a folder
+
+    Args:
+        path (Path): Path to a folder
+
+    Returns:
+        bool: True if the path points to a folder, which may have been created by this function 
+    """
+    if not path.exists():
+        path.mkdir(666, True, True)
+        return True
+    elif not path.is_dir():
+        messagebox.showerror("Error", "Destination is not a folder!")
+        logger.error(f"Destination is not a folder: {path}")
+        return False
+    
+    return True
+
 # Create window
 
 root = tk.Tk()

@@ -107,7 +107,8 @@ def createOrCheckFolderPath(path: Path) -> bool:
         bool: True if the path points to a folder, which may have been created by this function 
     """
     if not path.exists():
-        path.mkdir(666, True, True)
+        # Let umask determine permissions
+        path.mkdir(0o777, True, True)
         return True
     elif not path.is_dir():
         messagebox.showerror("Error", "Destination is not a folder!")

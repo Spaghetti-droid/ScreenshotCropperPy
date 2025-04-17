@@ -1,13 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import filedialog as fd
-from tkinter import messagebox
-from pathlib import Path
 import logging
 import scCore.Options as opt
-import scCore.ScreenshotEventHandler as seh
 import scCore.Broadcaster as bc
-import scGUI.guiItems as gi
+import scGUI.guiService as gs
 
 # Init logger
 
@@ -17,104 +13,7 @@ options = opt.loadOptions()
 
 # Get args and adjust log level
 
-logger.setLevel(gi.parseArgs(options).logLevel)
-
-# Callbacks
-
-def selectFolder() -> str:
-    """Open the file selection dialog and allow the user to choose a new destination.
-    If a new destination is chosen, it is set to destFolder
-    """
-    newDest = fd.askdirectory(initialdir=destFolder, title='Destination Folder')
-    if newDest:
-        destFolder.set(newDest)
-        
-def updateCurrentOptions() -> bool:
-    """Update options with the values contained in the fields. Shows an error message to the user if the inputs are invalid.
-
-    Returns:
-        bool: True if the update was successful, False if an invalid value was encountered or an error was triggered
-    """
-    try:
-        options.path = Path(destFolder.get())
-        options.xOffset = xOffset.get()
-        options.yOffset = yOffset.get()
-        options.width = width.get()
-        options.height = height.get()
-        logger.info("Options updated to: {" + options.toString() + "}")
-        return True
-    except Exception as e:
-        logger.exception("Options update failed")
-        messagebox.showerror("Invalid parameters", "Please check your inputs and try again")
-        return False
-
-def saveOptions() -> None:
-    """Save options as a file. Shows a message to the user if saving failed.
-    """
-    if not updateCurrentOptions():
-        return
-    if opt.saveOptions(options):
-        saveBtn.config(text='Saved!')
-        saveBtn.after(500, resetSaveLabel)
-    else:
-        messagebox.showerror("Error", "Failed to save!")
-        
-def resetSaveLabel() -> None:
-    saveBtn.config(text='Save')
-        
-def toggle() -> None:
-    """ Toggles listening on or off. listener is set to None when listening is off. An new instance is created when listening is turned on.
-    """
-    global listener
-    global broadcaster
-    # Start listening
-    if listener:
-        # Stop listening
-        listener.stopListening()
-        listener=None
-        # Update button
-        startBtn.config(text='Start')
-    else:
-        if not updateCurrentOptions():
-            return
-        try:            
-            listener = seh.ScreenShotEventHandler(options, broadcaster)
-            if not createOrCheckFolderPath(options.path):
-                return
-            listener.startListening()
-            # change label and command
-            startBtn.config(text='Stop')
-        except Exception as e:
-            messagebox.showerror("Error", "Couldn't start listening!")
-            logger.error("Couldn't start listening!", exc_info=e) 
-            # As a precaution if the startBtn.config somehow failed
-            if listener:
-                listener.stopListening()    
-                listener = None
-
-def createOrCheckFolderPath(path: Path) -> bool:
-    """Create folder at path if it doesn't exist
-    If it does exist, check that it is a folder
-
-    Args:
-        path (Path): Path to a folder
-
-    Returns:
-        bool: True if the path points to a folder, which may have been created by this function 
-    """
-    if not path.exists():
-        path.mkdir(666, True, True)
-        return True
-    elif not path.is_dir():
-        messagebox.showerror("Error", "Destination is not a folder!")
-        logger.error(f"Destination is not a folder: {path}")
-        return False
-    
-    return True
-
-# Init broadcaster
-
-broadcaster = bc.Broadcaster()
+logger.setLevel(gs.parseArgs(options).logLevel)
 
 # Create window
 
@@ -134,7 +33,13 @@ lastEvent = tk.StringVar()
 eventDate = tk.StringVar()
 events = []
 
-broadcaster.subscribe(gi.GuiSubscriber(eventDate, lastEvent, events))
+# Init data handling objects
+
+updater = gs.OptionUpdater(destFolder, xOffset, yOffset, width, height, options)
+broadcaster = bc.Broadcaster()
+broadcaster.subscribe(gs.GuiSubscriber(eventDate, lastEvent, events))
+saver = gs.Saver(updater)
+executor = gs.Executor(broadcaster, updater)
 
 # Event Log
 BACKGROUND = "#444444"
@@ -154,7 +59,7 @@ destFrame.pack(fill=tk.X, pady=5, padx=10, expand=True)
 
 ttk.Label(destFrame, text='Destination Folder').pack(side=tk.LEFT, padx=10, pady=5)
 ttk.Entry(destFrame, textvariable=destFolder).pack(side=tk.LEFT, fill=tk.X, expand=True)
-ttk.Button(destFrame, text='Browse', command=selectFolder).pack(side=tk.LEFT, padx=10, pady=5)
+ttk.Button(destFrame, text='Browse', command=lambda:gs.selectFolder(destFolder)).pack(side=tk.LEFT, padx=10, pady=5)
 
 ttk.Separator(root, orient='horizontal').pack(fill=tk.X, padx=50, pady=5, expand=True)
 
@@ -180,14 +85,15 @@ ttk.Separator(root, orient='horizontal').pack(fill=tk.X, padx=50, pady=5, expand
 buttonFrame = tk.Frame(root)
 buttonFrame.pack(fill=tk.X, pady=5, expand=True)
 
-saveBtn = ttk.Button(buttonFrame, text='Save', command=saveOptions)
+saveBtn = ttk.Button(buttonFrame, text='Save', command=saver.saveOptions)
+saver.setButton(saveBtn)
 saveBtn.pack(side=tk.LEFT, padx=10, pady=5, expand=True)
 
-listener = None
-startBtn = ttk.Button(buttonFrame, text='Start', command=toggle)
+startBtn = ttk.Button(buttonFrame, text='Start', command=executor.toggle)
+executor.setButton(startBtn)
 startBtn.pack(side=tk.LEFT, padx=10, pady=5, expand=True)
-ttk.Button(buttonFrame, text='Close', command=lambda:root.quit()).pack(side=tk.LEFT, padx=10, pady=5, expand=True)
 
+ttk.Button(buttonFrame, text='Close', command=lambda:root.quit()).pack(side=tk.LEFT, padx=10, pady=5, expand=True)
 
 broadcaster.report(bc.EventType.WAITING, text='Waiting to start')
 

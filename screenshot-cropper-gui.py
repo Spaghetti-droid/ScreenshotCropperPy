@@ -3,10 +3,11 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox
 from pathlib import Path
-import argparse
 import logging
 import scCore.Options as opt
 import scCore.ScreenshotEventHandler as seh
+import scCore.Broadcaster as bc
+import scGUI.guiItems as gi
 
 # Init logger
 
@@ -16,13 +17,7 @@ options = opt.loadOptions()
 
 # Get args and adjust log level
 
-parser = argparse.ArgumentParser(prog="screenshot-cropper-gui.py", 
-                                    formatter_class=argparse.RawDescriptionHelpFormatter,
-                                    description=f'''\
-Listen for screenshots, crop them to the desired format, and save them to disk
-''')
-parser.add_argument("-l", "--log-level", dest="logLevel", help=f"Level of detail for logged events. Default: {options.logLevel}", default=options.logLevel)
-logger.setLevel(parser.parse_args().logLevel)
+logger.setLevel(gi.parseArgs(options).logLevel)
 
 # Callbacks
 
@@ -71,6 +66,7 @@ def toggle() -> None:
     """ Toggles listening on or off. listener is set to None when listening is off. An new instance is created when listening is turned on.
     """
     global listener
+    global broadcaster
     # Start listening
     if listener:
         # Stop listening
@@ -82,7 +78,7 @@ def toggle() -> None:
         if not updateCurrentOptions():
             return
         try:            
-            listener = seh.ScreenShotEventHandler(options)
+            listener = seh.ScreenShotEventHandler(options, broadcaster)
             if not createOrCheckFolderPath(options.path):
                 return
             listener.startListening()
@@ -116,11 +112,15 @@ def createOrCheckFolderPath(path: Path) -> bool:
     
     return True
 
+# Init broadcaster
+
+broadcaster = bc.Broadcaster()
+
 # Create window
 
 root = tk.Tk()
 root.title("Screenshot Cropper - Take screenshots with F12")
-root.geometry('550x200')
+root.geometry('700x250')
 
 # Initialise field values
 
@@ -129,6 +129,23 @@ xOffset = tk.IntVar(value=options.xOffset)
 yOffset = tk.IntVar(value=options.yOffset)
 width  = tk.IntVar(value=options.width)
 height = tk.IntVar(value=options.height)
+
+lastEvent = tk.StringVar()
+eventDate = tk.StringVar()
+events = []
+
+broadcaster.subscribe(gi.GuiSubscriber(eventDate, lastEvent, events))
+
+# Event Log
+BACKGROUND = "#444444"
+NEUTRAL =   "#ffffff"
+eventFrame = tk.Frame(root, background=BACKGROUND)
+#ttk.Entry(eventFrame, textvariable=eventDate, width=18).pack(side=tk.LEFT, padx=10, pady=5)
+#ttk.Label(eventFrame, textvariable=eventDate, font=("none", 50, "bold"), bg="#000000", fg="#910000", bd=5, relief="ridge").pack(side=tk.LEFT, padx=10, pady=5)
+ttk.Label(eventFrame, textvariable=eventDate, font=("none", 10, "bold"), background=BACKGROUND, foreground=NEUTRAL).pack(side=tk.LEFT, padx=10, pady=5)
+ttk.Label(eventFrame, textvariable=lastEvent, font=("none", 10, "bold"), background=BACKGROUND, foreground=NEUTRAL, anchor='center').pack(padx=10, pady=5, fill=tk.X, expand=True)
+#ttk.Entry(eventFrame, textvariable=lastEvent).pack(side=tk.LEFT, padx=10, pady=5, fill=tk.X, expand=True)
+eventFrame.pack(fill=tk.X, pady=5, padx=10, expand=True)
 
 # Destination choice
 
@@ -171,5 +188,7 @@ startBtn = ttk.Button(buttonFrame, text='Start', command=toggle)
 startBtn.pack(side=tk.LEFT, padx=10, pady=5, expand=True)
 ttk.Button(buttonFrame, text='Close', command=lambda:root.quit()).pack(side=tk.LEFT, padx=10, pady=5, expand=True)
 
+
+broadcaster.report(bc.EventType.WAITING, text='Waiting to start')
 
 root.mainloop()

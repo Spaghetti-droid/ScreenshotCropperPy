@@ -31,13 +31,12 @@ height = tk.IntVar(value=options.height)
 
 lastEvent = tk.StringVar()
 eventDate = tk.StringVar()
-events = []
 
 # Init data handling objects
 
 updater = gs.OptionUpdater(destFolder, xOffset, yOffset, width, height, options)
 broadcaster = bc.Broadcaster()
-broadcaster.subscribe(gs.GuiSubscriber(eventDate, lastEvent, events))
+broadcaster.subscribe(gs.GuiSubscriber(eventDate, lastEvent))
 saver = gs.Saver(updater)
 executor = gs.Executor(broadcaster, updater)
 

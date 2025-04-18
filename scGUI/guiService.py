@@ -15,15 +15,13 @@ logger = logging.getLogger(__name__)
 class GuiSubscriber(bc.Subscriber):
     """A subscriber that updates vars based on the events it receives
     """
-    def __init__(self, eventDateVar:tk.StringVar, lastEventVar:tk.StringVar, events:list):
-        self.events = events
+    def __init__(self, eventDateVar:tk.StringVar, lastEventVar:tk.StringVar):
         self.eventDate = eventDateVar
         self.lastEvent = lastEventVar
     
     def trigger(self, event:bc.Event) -> None:
         """Use event to update text and date information in vars
         """
-        self.events.append(event)
         self.eventDate.set(event.time.strftime('%Y-%m-%d %H:%M:%S'))
         self.lastEvent.set(event.text)
      

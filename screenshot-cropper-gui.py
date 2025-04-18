@@ -45,11 +45,8 @@ executor = gs.Executor(broadcaster, updater)
 BACKGROUND = "#444444"
 NEUTRAL =   "#ffffff"
 eventFrame = tk.Frame(root, background=BACKGROUND)
-#ttk.Entry(eventFrame, textvariable=eventDate, width=18).pack(side=tk.LEFT, padx=10, pady=5)
-#ttk.Label(eventFrame, textvariable=eventDate, font=("none", 50, "bold"), bg="#000000", fg="#910000", bd=5, relief="ridge").pack(side=tk.LEFT, padx=10, pady=5)
 ttk.Label(eventFrame, textvariable=eventDate, font=("none", 10, "bold"), background=BACKGROUND, foreground=NEUTRAL).pack(side=tk.LEFT, padx=10, pady=5)
 ttk.Label(eventFrame, textvariable=lastEvent, font=("none", 10, "bold"), background=BACKGROUND, foreground=NEUTRAL, anchor='center').pack(padx=10, pady=5, fill=tk.X, expand=True)
-#ttk.Entry(eventFrame, textvariable=lastEvent).pack(side=tk.LEFT, padx=10, pady=5, fill=tk.X, expand=True)
 eventFrame.pack(fill=tk.X, pady=5, padx=10, expand=True)
 
 # Destination choice

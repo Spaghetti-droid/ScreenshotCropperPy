@@ -33,6 +33,10 @@ To start up the graphical user interface, simply double-click on the screenshot-
 
 In this interface, we can see the following elements:
 
+#### Event box
+
+This area displays various events. For example it records when we've started to listen for presses of F12 or when a screenshot is saved.
+
 #### Destination Folder
  
  You can use the file browser or the text box to specify where you want to save the screenshots. If you give a path to a folder that doesn't exist, it will be created when the 'Start' button is clicked.
